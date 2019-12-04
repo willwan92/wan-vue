@@ -7,20 +7,27 @@
 	<title>Document</title>
 </head>
 <body>
-		<h1 id="name">{{name}}</h1>
+		<div id="app">
+			<h1>{{title}}</h1>
+			<p><span>{{ name }}</span> <span>{{ title }}</span></p>
+		</div>
 </body>
 <script src="./js/observer.js"></script>
 <script src="./js/watcher.js"></script>
+<script src="./js/compile.js"></script>
 <script src="./js/index.js"></script>
 <script>
 	let ele = document.querySelector('#name');
 	var app = new WanVue({
-			name: 'hello world'
-		}, ele, 'name');
+		el: '#app',
+		data: {
+			title: 'Vue',
+			name: 'hello',
+		}
+	});
 
 	setTimeout(function() {
-		app.name = 'hello WanVue';		
-		console.log('name值改变了');
+		app.title = 'WanVue';
 	}, 2000)
 </script>
 </html>
