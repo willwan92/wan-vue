@@ -49,11 +49,75 @@ Compile.prototype = {
 			if (self.isTextNode(node) && reg.test(text)) {
 				// reg.exec(text)[1] 返回{{}}包裹的文本
 				self.compileText(node, reg.exec(text)[1]);
+			} else if (self.isElementNode(node)) {
+				self.compile(node);
 			}
 
 			// 如果还有子节点，继续递归遍历子节点
 			if (node.childNodes && node.childNodes.length) {
 				self.compileElement(node);
+			}
+		})
+	},
+	/**
+	 * 编译元素节点
+	 * @param {*} node 
+	 */
+	compile: function(node) {
+		let self = this;
+		let nodeAttrs = node.attributes;
+
+		// 遍历所有属性
+		Array.prototype.forEach.call(nodeAttrs, function(attr) {
+			let attrName = attr.name;
+
+			if (self.isDirective(attrName)) {
+				let dir = attrName.substring(2);
+				let exp = attr.value;
+
+				if (self.isEventDirective(dir)) {
+					self.compileEvent(node, dir, exp);
+				} else {
+					self.compileModel(node, dir, exp);
+				}
+
+				// 编译完之后，移除指令属性
+				node.removeAttribute(attrName);
+			}
+		})
+	},
+	compileEvent: function(node, dir, exp) {
+		let eventType = dir.split(':')[1];
+		let vm = this.vm;
+		let cb = vm.methods && vm.methods[exp];
+
+		if (eventType && cb) {
+			// 给节点绑定事件回调，cb.bind(vm) 把当前 vue 实例绑定为事件回调函数的this
+			node.addEventListener(eventType, cb.bind(vm), false)
+		}
+	},
+	compileModel(node, dir, exp) {
+		let vm = this.vm;
+		let self = this;
+		let value = vm[exp];
+
+		// 1. 初始化数据显示
+		self.updateModel(node, value);
+		
+		// 2. 添加数据监听器
+		new Watcher(vm, exp, function(node, value) {
+			self.updateModel(node, value);
+		})
+
+		// 3 添加事件绑定，更新数据
+		node.addEventListener('input', function(e){
+			let newVal = e.target.value;
+
+			if (newVal !== value) {
+				vm[exp] = node.value;
+
+				// 更新value
+				value = newVal;
 			}
 		})
 	},
@@ -71,6 +135,24 @@ Compile.prototype = {
 	},
 	updateText: function (node, value) {
 		node.textContent = typeof value === 'undefined' ? '' : value;
+	},
+
+	/**
+	 * 更新 v-model 绑定的数据视图
+	 * @param {*} node 
+	 * @param {*} value 
+	 */
+	updateModel: function(node, value) {
+		node.value = typeof value == 'undefined' ? '' : value;
+	},
+	isElementNode: function(node) {
+		return node.nodeType === 1;
+	},
+	isDirective: function(attr) {
+		return attr.indexOf('v-') === 0;
+	},
+	isEventDirective: function(attr) {
+		return attr.indexOf('on:') === 0;
 	},
 	isTextNode: function(node) {
 		return node.nodeType === 3;

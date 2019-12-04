@@ -8,8 +8,10 @@
 </head>
 <body>
 		<div id="app">
-			<h1>{{title}}</h1>
+			<h1 v-on:click="handleClick">{{title}}</h1>
 			<p><span>{{ name }}</span> <span>{{ title }}</span></p>
+			<p><input type="text" v-model="msg"></p>
+			<p><span>{{msg}}</span></p>
 		</div>
 </body>
 <script src="./js/observer.js"></script>
@@ -17,17 +19,28 @@
 <script src="./js/compile.js"></script>
 <script src="./js/index.js"></script>
 <script>
-	let ele = document.querySelector('#name');
+	
 	var app = new WanVue({
 		el: '#app',
 		data: {
 			title: 'Vue',
 			name: 'hello',
+			msg: '123'
+		},
+		mounted() {
+			window.setTimeout(() => {
+				this.title = 'wan-vue';
+			}, 2000)
+		},
+		methods: {
+			handleClick(e) {
+				alert('clicked')
+				console.log(e);
+				console.log(this)
+			}
 		}
 	});
 
-	setTimeout(function() {
-		app.title = 'WanVue';
-	}, 2000)
+	
 </script>
 </html>

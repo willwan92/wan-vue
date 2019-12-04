@@ -1,4 +1,4 @@
-// 1. Observer监听器（观察者）：用来劫持并监听所有属性，如果有变动，就通知订阅者。
+// 1. Observer监听器（观察者）：用来劫持并监听data的所有属性，如果有变动，就通知订阅者。
 function observe(data) {
 	if (!data || typeof data !== 'object') {
 		return;
@@ -9,6 +9,10 @@ function observe(data) {
 	})
 }
 
+// 消息订阅器，实现依赖收集器
+/**
+ * 把 数据 订阅者添加到订阅器里，当对应的数据发生发生变化（set）时，通知订阅者
+ */
 function Dep() {
 	this.subs = [];
 }

@@ -7,13 +7,21 @@ function WanVue (options) {
 	var self = this;
 	this.vm = this;
 	this.data = options.data;
+	this.methods = options.methods;
 
+	// 给data的所有属性添加代理，可以通过，实现 this.xxx 访问 this.data.xxx
 	Object.keys(this.data).forEach(function(key) {
 			self.proxyKeys(key);
 	});
 
+	// 为data数据添加observer
 	observe(this.data);
+
+	// 编译html模版，包括初始化数据视图和实现数据双向绑定
 	new Compile(options.el, this.vm);
+
+	// 执行 mounted 生命周期钩子函数
+	options.mounted.call(this);
 
 	// // 初始化模板数据的值
 	// el.innerHTML = this.data[exp];  
